@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movie Night — Guess Tonight's Film</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sand: #c8a96e;
+    --sand-light: #e8d5a8;
+    --dark: #1a1610;
+    --darker: #0d0b08;
+    --smoke: #8a9090;
+    --red: #8b1c1c;
+    --paper: #f0e8d0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--darker);
+    color: var(--sand-light);
+    font-family: 'Courier Prime', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 50px;
+    animation: fadeDown 0.8s ease forwards;
+  }
+
+  .stamp {
+    display: inline-block;
+    border: 3px solid var(--red);
+    color: var(--red);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    padding: 4px 12px;
+    margin-bottom: 20px;
+    transform: rotate(-2deg);
+    opacity: 0.85;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 8vw, 72px);
+    letter-spacing: 6px;
+    color: var(--sand);
+    line-height: 1;
+    margin-bottom: 8px;
+    text-shadow: 0 0 40px rgba(200,169,110,0.3);
+  }
+
+  .subtitle {
+    font-family: 'Special Elite', cursive;
+    font-size: 14px;
+    color: var(--smoke);
+    letter-spacing: 2px;
+  }
+
+  .player-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: rgba(200,169,110,0.35);
+    margin-top: 12px;
+  }
+
+  .scoreboard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(200,169,110,0.2);
+    border-bottom: 1px solid rgba(200,169,110,0.2);
+    padding: 16px 0;
+    margin-bottom: 40px;
+    animation: fadeIn 0.8s 0.2s ease both;
+  }
+
+  .score-block { text-align: center; flex: 1; }
+
+  .score-label {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--smoke);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .score-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--sand);
+    line-height: 1;
+  }
+
+  .score-divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(200,169,110,0.2);
+  }
+
+  .progress-track {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  .progress-pip {
+    flex: 1;
+    height: 3px;
+    background: rgba(200,169,110,0.15);
+    transition: background 0.4s;
+  }
+
+  .progress-pip.seen { background: rgba(200,169,110,0.4); }
+  .progress-pip.current { background: var(--sand); }
+
+  .previous-clues { margin-bottom: 24px; }
+
+  .prev-clue {
+    padding: 10px 16px;
+    border-left: 1px solid rgba(200,169,110,0.15);
+    margin-bottom: 8px;
+    color: var(--smoke);
+    font-size: 13px;
+    font-family: 'Special Elite', cursive;
+    opacity: 0.6;
+    position: relative;
+  }
+
+  .prev-clue::before {
+    content: attr(data-num);
+    position: absolute;
+    left: -20px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 11px;
+    color: rgba(200,169,110,0.3);
+    top: 12px;
+  }
+
+  .clue-area { margin-bottom: 32px; }
+
+  .clue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 16px;
+  }
+
+  .clue-label {
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--smoke);
+    text-transform: uppercase;
+  }
+
+  .points-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--sand);
+  }
+
+  .points-badge span {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--smoke);
+    font-family: 'Courier Prime', monospace;
+  }
+
+  .clue-card {
+    background: rgba(200,169,110,0.05);
+    border: 1px solid rgba(200,169,110,0.15);
+    border-left: 3px solid var(--sand);
+    padding: 24px 28px;
+    position: relative;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+  }
+
+  .clue-number {
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: var(--dark);
+    border: 1px solid rgba(200,169,110,0.3);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--smoke);
+    padding: 2px 8px;
+  }
+
+  .clue-text {
+    font-family: 'Special Elite', cursive;
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--paper);
+    opacity: 0;
+  }
+
+  .clue-text.revealed { animation: typeIn 0.6s ease forwards; }
+
+  .controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.8s 0.4s ease both;
+  }
+
+  button {
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    padding: 12px 20px;
+  }
+
+  .btn-primary {
+    background: var(--sand);
+    color: var(--darker);
+    font-weight: 700;
+    flex: 1;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--sand-light);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--sand);
+    border: 1px solid rgba(200,169,110,0.4);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    border-color: var(--sand);
+    background: rgba(200,169,110,0.05);
+  }
+
+  .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .btn-danger {
+    background: transparent;
+    color: #a03030;
+    border: 1px solid rgba(139,28,28,0.4);
+    font-size: 11px;
+  }
+
+  .btn-danger:hover { border-color: var(--red); background: rgba(139,28,28,0.05); }
+
+  .answer-area { margin-bottom: 24px; }
+
+  .answer-label {
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--smoke);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .answer-input-row { display: flex; gap: 10px; }
+
+  input[type="text"] {
+    flex: 1;
+    background: rgba(200,169,110,0.05);
+    border: 1px solid rgba(200,169,110,0.25);
+    border-bottom: 2px solid rgba(200,169,110,0.5);
+    color: var(--paper);
+    font-family: 'Special Elite', cursive;
+    font-size: 18px;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="text"]:focus { border-color: var(--sand); border-bottom-color: var(--sand); }
+  input[type="text"]::placeholder { color: rgba(200,169,110,0.3); font-size: 14px; }
+
+  .btn-guess {
+    background: var(--sand);
+    color: var(--darker);
+    font-weight: 700;
+    padding: 12px 24px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-guess:hover { background: var(--sand-light); }
+
+  .result-message {
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    font-family: 'Special Elite', cursive;
+    font-size: 16px;
+    display: none;
+  }
+
+  .result-message.correct {
+    display: block;
+    border: 1px solid rgba(100,160,80,0.4);
+    border-left: 3px solid #5a9a3a;
+    background: rgba(100,160,80,0.05);
+    color: #8acc60;
+    animation: fadeIn 0.4s ease forwards;
+  }
+
+  .result-message.wrong {
+    display: block;
+    border: 1px solid rgba(160,80,80,0.4);
+    border-left: 3px solid var(--red);
+    background: rgba(139,28,28,0.05);
+    color: #cc7070;
+    animation: fadeIn 0.4s ease forwards;
+  }
+
+  .result-message.game-over {
+    display: block;
+    border: 1px solid rgba(200,169,110,0.3);
+    background: rgba(200,169,110,0.05);
+    color: var(--sand-light);
+    text-align: center;
+    padding: 32px;
+    animation: fadeIn 0.4s ease forwards;
+  }
+
+  .result-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+
+  .answer-reveal {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    letter-spacing: 8px;
+    color: var(--sand);
+    margin: 16px 0;
+    text-shadow: 0 0 60px rgba(200,169,110,0.4);
+  }
+
+  .ticker {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(13,11,8,0.95);
+    border-top: 1px solid rgba(200,169,110,0.15);
+    overflow: hidden;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    z-index: 100;
+  }
+
+  .ticker-inner {
+    display: flex;
+    animation: scroll 30s linear infinite;
+    white-space: nowrap;
+    gap: 60px;
+  }
+
+  .ticker-item {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: rgba(200,169,110,0.4);
+    text-transform: uppercase;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes typeIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+  @keyframes scroll {
+    from { transform: translateX(100vw); }
+    to { transform: translateX(-100%); }
+  }
+
+  .shake { animation: shake 0.4s ease; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="stamp">Movie Night — Classified</div>
+    <h1>Guess The Film</h1>
+    <p class="subtitle">One clue at a time. Fewest clues wins.</p>
+    <p class="player-name">— Movie Fan 9000 —</p>
+  </div>
+
+  <div class="scoreboard">
+    <div class="score-block">
+      <div class="score-label">Clue</div>
+      <div class="score-value" id="clueCount">—</div>
+    </div>
+    <div class="score-divider"></div>
+    <div class="score-block">
+      <div class="score-label">Points if correct now</div>
+      <div class="score-value" id="currentPoints">5</div>
+    </div>
+    <div class="score-divider"></div>
+    <div class="score-block">
+      <div class="score-label">Clues remaining</div>
+      <div class="score-value" id="cluesLeft">5</div>
+    </div>
+  </div>
+
+  <div class="progress-track" id="progressTrack"></div>
+  <div class="previous-clues" id="previousClues"></div>
+
+  <div class="clue-area" id="clueArea" style="display:none">
+    <div class="clue-header">
+      <div class="clue-label">Current clue</div>
+      <div class="points-badge" id="pointsBadge"></div>
+    </div>
+    <div class="clue-card">
+      <div class="clue-number" id="clueNumber">Clue 1</div>
+      <div class="clue-text" id="clueText"></div>
+    </div>
+  </div>
+
+  <div class="controls" id="mainControls">
+    <button class="btn-primary" id="startBtn" onclick="startGame()">Start Game</button>
+    <button class="btn-secondary" id="nextBtn" onclick="nextClue()" style="display:none" disabled>Next Clue →</button>
+    <button class="btn-danger" id="resetBtn" onclick="resetGame()" style="display:none">Reset</button>
+  </div>
+
+  <div class="answer-area" id="answerArea" style="display:none">
+    <div class="answer-label">Your answer</div>
+    <div class="answer-input-row">
+      <input type="text" id="answerInput" placeholder="Name the film..." onkeydown="if(event.key==='Enter')checkAnswer()">
+      <button class="btn-guess" onclick="checkAnswer()">Guess</button>
+    </div>
+  </div>
+
+  <div class="result-message" id="resultMessage">
+    <div class="result-title" id="resultTitle"></div>
+    <div id="resultBody"></div>
+  </div>
+
+</div>
+
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item">Movie Night</span>
+    <span class="ticker-item">· · ·</span>
+    <span class="ticker-item">Clue by clue</span>
+    <span class="ticker-item">· · ·</span>
+    <span class="ticker-item">Movie Fan 9000</span>
+    <span class="ticker-item">· · ·</span>
+    <span class="ticker-item">Fewest clues wins</span>
+    <span class="ticker-item">· · ·</span>
+    <span class="ticker-item">Movie Night</span>
+    <span class="ticker-item">· · ·</span>
+    <span class="ticker-item">Clue by clue</span>
+    <span class="ticker-item">· · ·</span>
+    <span class="ticker-item">Movie Fan 9000</span>
+    <span class="ticker-item">· · ·</span>
+    <span class="ticker-item">Fewest clues wins</span>
+    <span class="ticker-item">· · ·</span>
+  </div>
+</div>
+
+<script>
+const CLUES = [
+  {
+    text: "The composer built the entire score around the ticking of his own pocket watch, recorded and layered into almost every scene.",
+    points: 5
+  },
+  {
+    text: "Released in 2017.",
+    points: 4
+  },
+  {
+    text: "The director refused CGI for the action sequences. Every vehicle on screen is either real or a practical scale model.",
+    points: 3
+  },
+  {
+    text: "The story is told across three separate timelines, each running on a completely different scale of time — one spanning a week, one a day, one a single hour.",
+    points: 2
+  },
+  {
+    text: "Based on a true event: a desperate military evacuation from a beach in northern France in the summer of 1940.",
+    points: 1
+  },
+];
+
+const ANSWER_ALIASES = ["dunkirk", "the dunkirk", "dunkirk 2017"];
+
+let currentClueIndex = -1;
+let gameStarted = false;
+let gameOver = false;
+
+function buildProgressTrack() {
+  const track = document.getElementById('progressTrack');
+  track.innerHTML = '';
+  CLUES.forEach((_, i) => {
+    const pip = document.createElement('div');
+    pip.className = 'progress-pip';
+    pip.id = `pip-${i}`;
+    track.appendChild(pip);
+  });
+}
+
+function updateProgress() {
+  CLUES.forEach((_, i) => {
+    const pip = document.getElementById(`pip-${i}`);
+    if (!pip) return;
+    if (i < currentClueIndex) pip.className = 'progress-pip seen';
+    else if (i === currentClueIndex) pip.className = 'progress-pip current';
+    else pip.className = 'progress-pip';
+  });
+}
+
+function updateScoreboard() {
+  document.getElementById('clueCount').textContent = currentClueIndex + 1;
+  document.getElementById('currentPoints').textContent = CLUES[currentClueIndex].points;
+  document.getElementById('cluesLeft').textContent = CLUES.length - (currentClueIndex + 1);
+  document.getElementById('pointsBadge').innerHTML = `${CLUES[currentClueIndex].points} <span>pts</span>`;
+  document.getElementById('clueNumber').textContent = `Clue ${currentClueIndex + 1}`;
+}
+
+function showClue(index) {
+  const clueText = document.getElementById('clueText');
+  clueText.className = 'clue-text';
+  void clueText.offsetWidth;
+  clueText.className = 'clue-text revealed';
+  clueText.textContent = CLUES[index].text;
+
+  updateScoreboard();
+  updateProgress();
+
+  document.getElementById('nextBtn').disabled = (index >= CLUES.length - 1);
+  document.getElementById('answerInput').value = '';
+  document.getElementById('resultMessage').className = 'result-message';
+  document.getElementById('answerInput').focus();
+}
+
+function startGame() {
+  gameStarted = true;
+  gameOver = false;
+  currentClueIndex = 0;
+
+  document.getElementById('startBtn').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('resetBtn').style.display = 'inline-block';
+  document.getElementById('clueArea').style.display = 'block';
+  document.getElementById('answerArea').style.display = 'block';
+  document.getElementById('resultMessage').className = 'result-message';
+  document.getElementById('previousClues').innerHTML = '';
+
+  buildProgressTrack();
+  showClue(0);
+}
+
+function nextClue() {
+  if (currentClueIndex >= CLUES.length - 1) return;
+
+  const prev = document.getElementById('previousClues');
+  const div = document.createElement('div');
+  div.className = 'prev-clue';
+  div.setAttribute('data-num', currentClueIndex + 1);
+  div.textContent = CLUES[currentClueIndex].text;
+  prev.appendChild(div);
+
+  currentClueIndex++;
+  showClue(currentClueIndex);
+}
+
+function checkAnswer() {
+  if (gameOver) return;
+  const input = document.getElementById('answerInput');
+  const raw = input.value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
+  if (!raw) return;
+
+  const correct = ANSWER_ALIASES.some(a => raw.includes(a));
+  const resultMsg = document.getElementById('resultMessage');
+  const resultTitle = document.getElementById('resultTitle');
+  const resultBody = document.getElementById('resultBody');
+
+  if (correct) {
+    const pts = CLUES[currentClueIndex].points;
+    const clueNum = currentClueIndex + 1;
+    resultTitle.textContent = 'Correct!';
+    resultMsg.className = 'result-message correct';
+    resultBody.textContent = `Got it on clue ${clueNum} of ${CLUES.length} — ${pts} point${pts !== 1 ? 's' : ''}. Not bad, Movie Fan 9000.`;
+    gameOver = true;
+    document.getElementById('nextBtn').disabled = true;
+    document.getElementById('answerArea').style.display = 'none';
+  } else {
+    input.classList.add('shake');
+    setTimeout(() => input.classList.remove('shake'), 400);
+    resultTitle.textContent = 'Not quite.';
+    resultMsg.className = 'result-message wrong';
+    resultBody.textContent = `"${input.value.trim()}" — keep trying, or reveal the next clue.`;
+    input.value = '';
+
+    if (currentClueIndex >= CLUES.length - 1) {
+      setTimeout(() => {
+        gameOver = true;
+        resultTitle.textContent = 'Out of clues!';
+        resultMsg.className = 'result-message game-over';
+        resultBody.innerHTML = `<div style="color:var(--smoke);font-size:14px;margin-bottom:8px">Tonight's film was:</div>
+          <div class="answer-reveal">DUNKIRK</div>
+          <div style="color:var(--smoke);font-size:13px">Christopher Nolan · 2017</div>`;
+        document.getElementById('answerArea').style.display = 'none';
+        document.getElementById('nextBtn').disabled = true;
+      }, 1200);
+    }
+  }
+}
+
+function resetGame() {
+  gameStarted = false;
+  gameOver = false;
+  currentClueIndex = -1;
+
+  document.getElementById('startBtn').style.display = 'inline-block';
+  document.getElementById('nextBtn').style.display = 'none';
+  document.getElementById('resetBtn').style.display = 'none';
+  document.getElementById('clueArea').style.display = 'none';
+  document.getElementById('answerArea').style.display = 'none';
+  document.getElementById('resultMessage').className = 'result-message';
+  document.getElementById('previousClues').innerHTML = '';
+  document.getElementById('clueCount').textContent = '—';
+  document.getElementById('currentPoints').textContent = '5';
+  document.getElementById('cluesLeft').textContent = CLUES.length;
+
+  buildProgressTrack();
+}
+
+buildProgressTrack();
+</script>
+</body>
+</html>
