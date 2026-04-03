@@ -345,10 +345,11 @@
   .result-message.correct {
     display: block;
     border: 1px solid rgba(100,160,80,0.4);
-    border-left: 3px solid #5a9a3a;
     background: rgba(100,160,80,0.05);
     color: #8acc60;
-    animation: fadeIn 0.4s ease forwards;
+    text-align: center;
+    padding: 40px 32px;
+    animation: fadeIn 0.5s ease forwards;
   }
 
   .result-message.wrong {
@@ -366,8 +367,8 @@
     background: rgba(200,169,110,0.05);
     color: var(--sand-light);
     text-align: center;
-    padding: 32px;
-    animation: fadeIn 0.4s ease forwards;
+    padding: 40px 32px;
+    animation: fadeIn 0.5s ease forwards;
   }
 
   .result-title {
@@ -377,13 +378,34 @@
     margin-bottom: 8px;
   }
 
+  .result-title.big {
+    font-size: clamp(42px, 10vw, 72px);
+    letter-spacing: 6px;
+    margin-bottom: 16px;
+  }
+
   .answer-reveal {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 56px;
+    font-size: clamp(48px, 12vw, 80px);
     letter-spacing: 8px;
     color: var(--sand);
     margin: 16px 0;
-    text-shadow: 0 0 60px rgba(200,169,110,0.4);
+    text-shadow: 0 0 80px rgba(200,169,110,0.5);
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+
+  .correct-points {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 12vw, 80px);
+    color: #6abf45;
+    text-shadow: 0 0 60px rgba(100,190,70,0.4);
+    margin: 8px 0 16px;
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.75; }
   }
 
   .ticker {
@@ -631,6 +653,28 @@ function nextClue() {
 
   currentClueIndex++;
   showClue(currentClueIndex);
+
+  // Auto-reveal after showing the last clue with a short delay
+  if (currentClueIndex >= CLUES.length - 1) {
+    document.getElementById('nextBtn').disabled = true;
+    setTimeout(showReveal, 8000);
+  }
+}
+
+function showReveal() {
+  if (gameOver) return;
+  gameOver = true;
+  const resultMsg = document.getElementById('resultMessage');
+  const resultTitle = document.getElementById('resultTitle');
+  const resultBody = document.getElementById('resultBody');
+  resultTitle.className = 'result-title';
+  resultTitle.textContent = 'Time\'s up!';
+  resultMsg.className = 'result-message game-over';
+  resultBody.innerHTML = `<div style="color:var(--smoke);font-size:14px;margin-bottom:4px">Tonight's film was:</div>
+    <div class="answer-reveal">DUNKIRK</div>
+    <div style="color:var(--smoke);font-size:13px">Christopher Nolan · 2017</div>`;
+  document.getElementById('answerArea').style.display = 'none';
+  document.getElementById('nextBtn').disabled = true;
 }
 
 function checkAnswer() {
@@ -647,31 +691,25 @@ function checkAnswer() {
   if (correct) {
     const pts = CLUES[currentClueIndex].points;
     const clueNum = currentClueIndex + 1;
-    resultTitle.textContent = 'Correct!';
-    resultMsg.className = 'result-message correct';
-    resultBody.textContent = `Got it on clue ${clueNum} of ${CLUES.length} — ${pts} point${pts !== 1 ? 's' : ''}. Not bad, Movie Fan 9000.`;
     gameOver = true;
     document.getElementById('nextBtn').disabled = true;
     document.getElementById('answerArea').style.display = 'none';
+    resultTitle.className = 'result-title big';
+    resultTitle.textContent = 'Well Done!';
+    resultMsg.className = 'result-message correct';
+    resultBody.innerHTML = `<div class="correct-points">+${pts} point${pts !== 1 ? 's' : ''}</div>
+      <div style="color:#8acc60;font-size:15px;font-family:'Special Elite',cursive">Got it on clue ${clueNum} of ${CLUES.length}. Not bad, Movie Fan 9000.</div>`;
   } else {
     input.classList.add('shake');
     setTimeout(() => input.classList.remove('shake'), 400);
+    resultTitle.className = 'result-title';
     resultTitle.textContent = 'Not quite.';
     resultMsg.className = 'result-message wrong';
     resultBody.textContent = `"${input.value.trim()}" — keep trying, or reveal the next clue.`;
     input.value = '';
 
     if (currentClueIndex >= CLUES.length - 1) {
-      setTimeout(() => {
-        gameOver = true;
-        resultTitle.textContent = 'Out of clues!';
-        resultMsg.className = 'result-message game-over';
-        resultBody.innerHTML = `<div style="color:var(--smoke);font-size:14px;margin-bottom:8px">Tonight's film was:</div>
-          <div class="answer-reveal">DUNKIRK</div>
-          <div style="color:var(--smoke);font-size:13px">Christopher Nolan · 2017</div>`;
-        document.getElementById('answerArea').style.display = 'none';
-        document.getElementById('nextBtn').disabled = true;
-      }, 1200);
+      setTimeout(showReveal, 1500);
     }
   }
 }
