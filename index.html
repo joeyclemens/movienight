@@ -6,21 +6,15 @@
     <title>Pan's Labyrinth Quiz</title>
     <style>
         :root {
-            --bg-1: #08110d;
-            --bg-2: #102019;
-            --panel: rgba(14, 25, 21, 0.92);
-            --panel-2: rgba(20, 35, 29, 0.96);
             --gold: #d9bf78;
             --gold-soft: #b89b5d;
             --text: #f1ead7;
             --muted: #b9b09b;
             --line: rgba(217, 191, 120, 0.22);
-            --green-glow: rgba(110, 150, 110, 0.18);
             --correct-bg: rgba(65, 110, 72, 0.28);
             --correct-border: rgba(122, 191, 119, 0.55);
             --wrong-bg: rgba(120, 55, 45, 0.32);
             --wrong-border: rgba(202, 111, 92, 0.5);
-            --warning-bg: rgba(125, 98, 29, 0.24);
             --warning-border: rgba(217, 191, 120, 0.45);
         }
 
@@ -28,8 +22,7 @@
             box-sizing: border-box;
         }
 
-        html,
-        body {
+        html, body {
             margin: 0;
             min-height: 100%;
         }
@@ -67,8 +60,7 @@
         }
 
         body::after {
-            background-image:
-                linear-gradient(rgba(255,255,255,0.015), rgba(255,255,255,0.015));
+            background-image: linear-gradient(rgba(255,255,255,0.015), rgba(255,255,255,0.015));
             opacity: 0.5;
             mix-blend-mode: soft-light;
         }
@@ -409,9 +401,7 @@
         <div class="frame">
             <div class="ornament">✦ ❦ ✦</div>
             <h1>Pan's Labyrinth Quiz</h1>
-            <p class="subtitle">
-                Three statements. One is a lie.
-            </p>
+            <p class="subtitle">Three statements. One is a lie.</p>
 
             <div id="quiz-container"></div>
 
@@ -432,7 +422,8 @@
     </div>
 
     <script>
-        const quizzes = [
+        // Base quiz data (correct lie text is tied to the original lieIndex)
+        const baseQuizzes = [
             {
                 id: 1,
                 statements: [
@@ -440,28 +431,28 @@
                     "Pan's Labyrinth won Oscars for Cinematography, Art Direction, and Makeup.",
                     "The film was shot entirely in English and dubbed into Spanish later."
                 ],
-                lie: 2,
-                lieText: "The lie is the third statement. The film was made in Spanish, not shot in English first. Doug Jones did play both creatures, and the film won three Oscars."
+                lieIndex: 2,
+                lieText: "The lie is that the film was shot entirely in English and dubbed into Spanish later. It was made in Spanish. Doug Jones did play both creatures, and the film won three Oscars."
             },
             {
                 id: 2,
                 statements: [
+                    "Pan's Labyrinth is a remake of an older Spanish fantasy film.",
                     "Guillermo del Toro wrote and directed the film.",
-                    "The film was released in 2006.",
-                    "Pan's Labyrinth is a remake of an older Spanish fantasy film."
+                    "The film was released in 2006."
                 ],
-                lie: 2,
-                lieText: "The lie is the third statement. Pan's Labyrinth is an original film, not a remake."
+                lieIndex: 0,
+                lieText: "The lie is that Pan's Labyrinth is a remake. It is an original film, not a remake."
             },
             {
                 id: 3,
                 statements: [
                     "Ivana Baquero was cast after Guillermo del Toro adjusted the role to suit her age.",
-                    "Sergi López plays Captain Vidal.",
-                    "The role of Ofelia was originally written for an adult woman."
+                    "The role of Ofelia was originally written for an adult woman.",
+                    "Sergi López plays Captain Vidal."
                 ],
-                lie: 2,
-                lieText: "The lie is the third statement. Ofelia was not originally written as an adult woman. Del Toro adapted the character after casting Ivana Baquero."
+                lieIndex: 1,
+                lieText: "The lie is that Ofelia was originally written for an adult woman. Del Toro adapted the character after casting Ivana Baquero."
             },
             {
                 id: 4,
@@ -470,18 +461,18 @@
                     "The film is primarily in Spanish.",
                     "It was produced as a Hollywood studio musical."
                 ],
-                lie: 2,
-                lieText: "The lie is the third statement. Pan's Labyrinth is a dark fantasy drama, not a Hollywood musical."
+                lieIndex: 2,
+                lieText: "The lie is that it was produced as a Hollywood studio musical. Pan's Labyrinth is a dark fantasy drama."
             },
             {
                 id: 5,
                 statements: [
                     "Guillermo del Toro has said the film can be read as either literal fantasy or psychological interpretation.",
-                    "The creature effects combine prosthetics, costume work, and CGI.",
-                    "The film was directed by Alfonso Cuarón."
+                    "The film was directed by Alfonso Cuarón.",
+                    "The creature effects combine prosthetics, costume work, and CGI."
                 ],
-                lie: 2,
-                lieText: "The lie is the third statement. The film was directed by Guillermo del Toro, not Alfonso Cuarón."
+                lieIndex: 1,
+                lieText: "The lie is that the film was directed by Alfonso Cuarón. It was directed by Guillermo del Toro."
             },
             {
                 id: 6,
@@ -490,28 +481,28 @@
                     "It won three Academy Awards.",
                     "It was Mexico's official submission to the Oscars."
                 ],
-                lie: 0,
-                lieText: "The lie is the first statement. Although it won three Oscars, it was not nominated for Best Foreign Language Film."
+                lieIndex: 0,
+                lieText: "The lie is that the film was nominated for Best Foreign Language Film at the Oscars. Although it won three Oscars, it was not nominated in that category."
             },
             {
                 id: 7,
                 statements: [
                     "The Faun's Spanish name is 'el fauno.'",
-                    "Doug Jones performed in heavy prosthetics and learned lines phonetically.",
-                    "The Faun was created entirely as a digital character with no costume or makeup."
+                    "The Faun was created entirely as a digital character with no costume or makeup.",
+                    "Doug Jones performed in heavy prosthetics and learned lines phonetically."
                 ],
-                lie: 2,
-                lieText: "The lie is the third statement. The Faun was performed physically by Doug Jones using extensive prosthetics and costume work, with digital enhancement in places."
+                lieIndex: 1,
+                lieText: "The lie is that the Faun was entirely digital. Doug Jones performed physically in extensive prosthetics and costume, with digital enhancement in places."
             },
             {
                 id: 8,
                 statements: [
+                    "It was filmed in black and white to resemble silent cinema.",
                     "The film blends dark fantasy with historical drama.",
-                    "It is associated with the Francoist period in Spain.",
-                    "It was filmed in black and white to resemble silent cinema."
+                    "It is associated with the Francoist period in Spain."
                 ],
-                lie: 2,
-                lieText: "The lie is the third statement. The film is in colour and is known for its rich visual design, not black-and-white silent-era styling."
+                lieIndex: 0,
+                lieText: "The lie is that it was filmed in black and white. The film is in colour and is known for its rich visual design."
             },
             {
                 id: 9,
@@ -520,15 +511,47 @@
                     "He keeps a collection of creepy props and memorabilia in a house he nicknamed 'Bleak House.'",
                     "He later directed Harry Potter and the Half-Blood Prince."
                 ],
-                lie: 2,
-                lieText: "The lie is the third statement. Guillermo del Toro has said he was approached about directing a Harry Potter film, but he never directed one. The 'Bleak House' fact is true — he’s well known for his famously eerie creative collection."
+                lieIndex: 2,
+                lieText: "The lie is that he later directed Harry Potter and the Half-Blood Prince. Guillermo del Toro was approached about a Harry Potter film, but he never directed one. The 'Bleak House' fact is true."
             }
         ];
 
+        let quizzes = [];
         let currentRound = 0;
         let score = 0;
         let selectedAnswer = null;
         let revealed = false;
+
+        function shuffleArray(array) {
+            const copy = [...array];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        function buildShuffledQuizzes() {
+            // Shuffle round order too, just for fun / replayability
+            const shuffledRounds = shuffleArray(baseQuizzes);
+
+            return shuffledRounds.map(round => {
+                const statementObjects = round.statements.map((text, index) => ({
+                    text,
+                    isLie: index === round.lieIndex
+                }));
+
+                const shuffledStatements = shuffleArray(statementObjects);
+                const newLieIndex = shuffledStatements.findIndex(item => item.isLie);
+
+                return {
+                    id: round.id,
+                    statements: shuffledStatements.map(item => item.text),
+                    lie: newLieIndex,
+                    lieText: round.lieText
+                };
+            });
+        }
 
         function renderQuiz() {
             const quiz = quizzes[currentRound];
@@ -628,10 +651,13 @@
             score = 0;
             selectedAnswer = null;
             revealed = false;
+            quizzes = buildShuffledQuizzes();
             document.getElementById("end-screen").classList.remove("active");
             renderQuiz();
         }
 
+        // Start the quiz with shuffled rounds + shuffled answers
+        quizzes = buildShuffledQuizzes();
         renderQuiz();
     </script>
 </body>
