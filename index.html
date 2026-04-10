@@ -1,739 +1,638 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Movie Night — Guess Tonight's Film</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --sand: #c8a96e;
-    --sand-light: #e8d5a8;
-    --dark: #1a1610;
-    --darker: #0d0b08;
-    --smoke: #8a9090;
-    --red: #8b1c1c;
-    --paper: #f0e8d0;
-  }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pan's Labyrinth Quiz</title>
+    <style>
+        :root {
+            --bg-1: #08110d;
+            --bg-2: #102019;
+            --panel: rgba(14, 25, 21, 0.92);
+            --panel-2: rgba(20, 35, 29, 0.96);
+            --gold: #d9bf78;
+            --gold-soft: #b89b5d;
+            --text: #f1ead7;
+            --muted: #b9b09b;
+            --line: rgba(217, 191, 120, 0.22);
+            --green-glow: rgba(110, 150, 110, 0.18);
+            --correct-bg: rgba(65, 110, 72, 0.28);
+            --correct-border: rgba(122, 191, 119, 0.55);
+            --wrong-bg: rgba(120, 55, 45, 0.32);
+            --wrong-border: rgba(202, 111, 92, 0.5);
+            --warning-bg: rgba(125, 98, 29, 0.24);
+            --warning-border: rgba(217, 191, 120, 0.45);
+        }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
-  body {
-    background: var(--darker);
-    color: var(--sand-light);
-    font-family: 'Courier Prime', monospace;
-    min-height: 100vh;
-    overflow-x: hidden;
-    position: relative;
-  }
+        html,
+        body {
+            margin: 0;
+            min-height: 100%;
+        }
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 1000;
-    opacity: 0.4;
-  }
+        body {
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 20% 20%, rgba(92, 126, 93, 0.12), transparent 28%),
+                radial-gradient(circle at 80% 18%, rgba(137, 119, 69, 0.08), transparent 24%),
+                radial-gradient(circle at 50% 100%, rgba(31, 61, 46, 0.42), transparent 42%),
+                linear-gradient(180deg, #0a120e 0%, #0f1b16 48%, #07100c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
-    pointer-events: none;
-    z-index: 999;
-  }
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+        }
 
-  .container {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 40px 20px 80px;
-    position: relative;
-    z-index: 1;
-  }
+        body::before {
+            background:
+                radial-gradient(circle at 8% 78%, rgba(94, 133, 95, 0.15), transparent 18%),
+                radial-gradient(circle at 92% 82%, rgba(94, 133, 95, 0.12), transparent 16%),
+                radial-gradient(circle at 48% 16%, rgba(217, 191, 120, 0.05), transparent 14%);
+            filter: blur(8px);
+        }
 
-  .header {
-    text-align: center;
-    margin-bottom: 50px;
-    animation: fadeDown 0.8s ease forwards;
-  }
+        body::after {
+            background-image:
+                linear-gradient(rgba(255,255,255,0.015), rgba(255,255,255,0.015));
+            opacity: 0.5;
+            mix-blend-mode: soft-light;
+        }
 
-  .stamp {
-    display: inline-block;
-    border: 3px solid var(--red);
-    color: var(--red);
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 11px;
-    letter-spacing: 4px;
-    padding: 4px 12px;
-    margin-bottom: 20px;
-    transform: rotate(-2deg);
-    opacity: 0.85;
-  }
+        .container {
+            width: 100%;
+            max-width: 760px;
+            position: relative;
+        }
 
-  h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(36px, 8vw, 72px);
-    letter-spacing: 6px;
-    color: var(--sand);
-    line-height: 1;
-    margin-bottom: 8px;
-    text-shadow: 0 0 40px rgba(200,169,110,0.3);
-  }
+        .frame {
+            position: relative;
+            background: linear-gradient(180deg, rgba(14, 25, 21, 0.96), rgba(10, 19, 15, 0.96));
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 34px 26px 26px;
+            box-shadow:
+                0 20px 80px rgba(0, 0, 0, 0.45),
+                inset 0 0 0 1px rgba(217, 191, 120, 0.06),
+                inset 0 0 35px rgba(110, 150, 110, 0.08);
+            overflow: hidden;
+        }
 
-  .subtitle {
-    font-family: 'Special Elite', cursive;
-    font-size: 14px;
-    color: var(--smoke);
-    letter-spacing: 2px;
-  }
+        .frame::before {
+            content: "";
+            position: absolute;
+            inset: 12px;
+            border: 1px solid rgba(217, 191, 120, 0.12);
+            border-radius: 16px;
+            pointer-events: none;
+        }
 
-  .player-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 13px;
-    letter-spacing: 3px;
-    color: rgba(200,169,110,0.35);
-    margin-top: 12px;
-  }
+        .frame::after {
+            content: "";
+            position: absolute;
+            inset: auto -60px -70px auto;
+            width: 240px;
+            height: 240px;
+            background: radial-gradient(circle, rgba(86, 123, 91, 0.14), transparent 60%);
+            filter: blur(12px);
+            pointer-events: none;
+        }
 
-  .scoreboard {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid rgba(200,169,110,0.2);
-    border-bottom: 1px solid rgba(200,169,110,0.2);
-    padding: 16px 0;
-    margin-bottom: 40px;
-    animation: fadeIn 0.8s 0.2s ease both;
-  }
+        .ornament {
+            text-align: center;
+            color: var(--gold-soft);
+            font-size: 18px;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            opacity: 0.85;
+        }
 
-  .score-block { text-align: center; flex: 1; }
+        h1 {
+            margin: 0;
+            text-align: center;
+            font-size: clamp(2rem, 4vw, 3rem);
+            line-height: 1.1;
+            font-weight: 600;
+            color: var(--gold);
+            text-shadow: 0 0 16px rgba(217, 191, 120, 0.14);
+        }
 
-  .score-label {
-    font-size: 9px;
-    letter-spacing: 3px;
-    color: var(--smoke);
-    text-transform: uppercase;
-    margin-bottom: 4px;
-  }
+        .subtitle {
+            margin: 12px auto 28px;
+            text-align: center;
+            max-width: 560px;
+            color: var(--muted);
+            font-size: 0.98rem;
+            line-height: 1.6;
+        }
 
-  .score-value {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 36px;
-    color: var(--sand);
-    line-height: 1;
-  }
+        .quiz-section {
+            display: none;
+        }
 
-  .score-divider {
-    width: 1px;
-    height: 40px;
-    background: rgba(200,169,110,0.2);
-  }
+        .quiz-section.active {
+            display: block;
+        }
 
-  .progress-track {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 32px;
-  }
+        .meta-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
 
-  .progress-pip {
-    flex: 1;
-    height: 3px;
-    background: rgba(200,169,110,0.15);
-    transition: background 0.4s;
-  }
+        .round-label,
+        .score {
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 10px 14px;
+            color: var(--muted);
+            font-size: 0.85rem;
+            letter-spacing: 0.04em;
+        }
 
-  .progress-pip.seen { background: rgba(200,169,110,0.4); }
-  .progress-pip.current { background: var(--sand); }
+        .statements {
+            display: grid;
+            gap: 14px;
+        }
 
-  .previous-clues { margin-bottom: 24px; }
+        .statement {
+            position: relative;
+            padding: 18px 18px 18px 20px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.015));
+            border: 1px solid rgba(217, 191, 120, 0.14);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+            overflow: hidden;
+        }
 
-  .prev-clue {
-    padding: 10px 16px;
-    border-left: 1px solid rgba(200,169,110,0.15);
-    margin-bottom: 8px;
-    color: var(--smoke);
-    font-size: 13px;
-    font-family: 'Special Elite', cursive;
-    opacity: 0.6;
-    position: relative;
-  }
+        .statement::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 4px;
+            background: linear-gradient(180deg, rgba(217, 191, 120, 0.22), rgba(112, 148, 108, 0.28));
+            opacity: 0.7;
+        }
 
-  .prev-clue::before {
-    content: attr(data-num);
-    position: absolute;
-    left: -20px;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 11px;
-    color: rgba(200,169,110,0.3);
-    top: 12px;
-  }
+        .statement:hover {
+            transform: translateY(-2px);
+            border-color: rgba(217, 191, 120, 0.28);
+            background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+        }
 
-  .clue-area { margin-bottom: 32px; }
+        .statement.selected {
+            border-color: rgba(217, 191, 120, 0.5);
+            background:
+                linear-gradient(180deg, rgba(217, 191, 120, 0.08), rgba(113, 145, 109, 0.08)),
+                rgba(255,255,255,0.02);
+            box-shadow: 0 0 0 1px rgba(217, 191, 120, 0.08), 0 10px 26px rgba(0, 0, 0, 0.25);
+        }
 
-  .clue-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 16px;
-  }
+        .statement.selected::after {
+            content: "Selected";
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--gold);
+            opacity: 0.9;
+        }
 
-  .clue-label {
-    font-size: 10px;
-    letter-spacing: 4px;
-    color: var(--smoke);
-    text-transform: uppercase;
-  }
+        .statement-text {
+            margin: 0;
+            font-size: 1rem;
+            line-height: 1.65;
+            color: var(--text);
+            padding-right: 74px;
+        }
 
-  .points-badge {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    color: var(--sand);
-  }
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
 
-  .points-badge span {
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: var(--smoke);
-    font-family: 'Courier Prime', monospace;
-  }
+        button {
+            appearance: none;
+            border: 1px solid rgba(217, 191, 120, 0.26);
+            border-radius: 999px;
+            background: linear-gradient(180deg, rgba(34, 49, 41, 0.95), rgba(24, 35, 29, 0.95));
+            color: var(--text);
+            padding: 14px 18px;
+            font: inherit;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+            flex: 1;
+        }
 
-  .clue-card {
-    background: rgba(200,169,110,0.05);
-    border: 1px solid rgba(200,169,110,0.15);
-    border-left: 3px solid var(--sand);
-    padding: 24px 28px;
-    position: relative;
-    min-height: 90px;
-    display: flex;
-    align-items: center;
-  }
+        button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            border-color: rgba(217, 191, 120, 0.45);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
 
-  .clue-number {
-    position: absolute;
-    top: -12px;
-    left: 20px;
-    background: var(--dark);
-    border: 1px solid rgba(200,169,110,0.3);
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 13px;
-    letter-spacing: 2px;
-    color: var(--smoke);
-    padding: 2px 8px;
-  }
+        button.primary {
+            background: linear-gradient(180deg, #7c6740, #5f4c2c);
+            color: #f8f1df;
+            border-color: rgba(217, 191, 120, 0.55);
+            text-shadow: 0 1px 0 rgba(0,0,0,0.22);
+        }
 
-  .clue-text {
-    font-family: 'Special Elite', cursive;
-    font-size: 18px;
-    line-height: 1.6;
-    color: var(--paper);
-    opacity: 0;
-  }
+        button.primary:hover:not(:disabled) {
+            background: linear-gradient(180deg, #8a7347, #6a5530);
+        }
 
-  .clue-text.revealed { animation: typeIn 0.6s ease forwards; }
+        button:disabled {
+            opacity: 0.42;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
 
-  .controls {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 32px;
-    flex-wrap: wrap;
-    animation: fadeUp 0.8s 0.4s ease both;
-  }
+        .reveal {
+            margin-top: 22px;
+        }
 
-  button {
-    font-family: 'Courier Prime', monospace;
-    font-size: 12px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-    padding: 12px 20px;
-  }
+        .reveal-content {
+            background: linear-gradient(180deg, rgba(29, 41, 35, 0.95), rgba(20, 31, 26, 0.95));
+            border: 1px solid var(--warning-border);
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: inset 0 0 24px rgba(217, 191, 120, 0.03);
+        }
 
-  .btn-primary {
-    background: var(--sand);
-    color: var(--darker);
-    font-weight: 700;
-    flex: 1;
-  }
+        .lie-label {
+            margin: 0 0 8px;
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--gold);
+        }
 
-  .btn-primary:hover:not(:disabled) {
-    background: var(--sand-light);
-    transform: translateY(-1px);
-  }
+        .lie-text {
+            margin: 0 0 10px;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text);
+            font-weight: 600;
+        }
 
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+        .explanation {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
 
-  .btn-secondary {
-    background: transparent;
-    color: var(--sand);
-    border: 1px solid rgba(200,169,110,0.4);
-  }
+        .result-message {
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-align: center;
+        }
 
-  .btn-secondary:hover:not(:disabled) {
-    border-color: var(--sand);
-    background: rgba(200,169,110,0.05);
-  }
+        .result-correct {
+            background: var(--correct-bg);
+            border: 1px solid var(--correct-border);
+            color: #d8f0d6;
+        }
 
-  .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
+        .result-incorrect {
+            background: var(--wrong-bg);
+            border: 1px solid var(--wrong-border);
+            color: #ffd8d1;
+        }
 
-  .btn-danger {
-    background: transparent;
-    color: #a03030;
-    border: 1px solid rgba(139,28,28,0.4);
-    font-size: 11px;
-  }
+        .end-screen {
+            text-align: center;
+            padding: 8px 4px 4px;
+        }
 
-  .btn-danger:hover { border-color: var(--red); background: rgba(139,28,28,0.05); }
+        .end-screen h2 {
+            margin: 0 0 12px;
+            font-size: 2rem;
+            color: var(--gold);
+            font-weight: 600;
+        }
 
-  .answer-area { margin-bottom: 24px; }
+        .end-score {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 14px;
+            text-shadow: 0 0 18px rgba(217, 191, 120, 0.12);
+        }
 
-  .answer-label {
-    font-size: 9px;
-    letter-spacing: 4px;
-    color: var(--smoke);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
+        .end-text {
+            margin: 0 auto 22px;
+            max-width: 480px;
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 1rem;
+        }
 
-  .answer-input-row { display: flex; gap: 10px; }
+        .footer-note {
+            margin-top: 18px;
+            text-align: center;
+            color: rgba(185, 176, 155, 0.7);
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
 
-  input[type="text"] {
-    flex: 1;
-    background: rgba(200,169,110,0.05);
-    border: 1px solid rgba(200,169,110,0.25);
-    border-bottom: 2px solid rgba(200,169,110,0.5);
-    color: var(--paper);
-    font-family: 'Special Elite', cursive;
-    font-size: 18px;
-    padding: 12px 16px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
+        @media (max-width: 640px) {
+            body {
+                padding: 14px;
+            }
 
-  input[type="text"]:focus { border-color: var(--sand); border-bottom-color: var(--sand); }
-  input[type="text"]::placeholder { color: rgba(200,169,110,0.3); font-size: 14px; }
+            .frame {
+                padding: 24px 16px 18px;
+                border-radius: 18px;
+            }
 
-  .btn-guess {
-    background: var(--sand);
-    color: var(--darker);
-    font-weight: 700;
-    padding: 12px 24px;
-    font-family: 'Courier Prime', monospace;
-    font-size: 12px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
+            .meta-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
 
-  .btn-guess:hover { background: var(--sand-light); }
+            .round-label,
+            .score {
+                text-align: center;
+            }
 
-  .result-message {
-    padding: 20px 24px;
-    margin-bottom: 24px;
-    font-family: 'Special Elite', cursive;
-    font-size: 16px;
-    display: none;
-  }
+            .statement-text {
+                padding-right: 0;
+            }
 
-  .result-message.correct {
-    display: block;
-    border: 1px solid rgba(100,160,80,0.4);
-    background: rgba(100,160,80,0.05);
-    color: #8acc60;
-    text-align: center;
-    padding: 40px 32px;
-    animation: fadeIn 0.5s ease forwards;
-  }
+            .statement.selected::after {
+                position: static;
+                display: inline-block;
+                margin-top: 10px;
+            }
 
-  .result-message.wrong {
-    display: block;
-    border: 1px solid rgba(160,80,80,0.4);
-    border-left: 3px solid var(--red);
-    background: rgba(139,28,28,0.05);
-    color: #cc7070;
-    animation: fadeIn 0.4s ease forwards;
-  }
+            .controls {
+                flex-direction: column;
+            }
 
-  .result-message.game-over {
-    display: block;
-    border: 1px solid rgba(200,169,110,0.3);
-    background: rgba(200,169,110,0.05);
-    color: var(--sand-light);
-    text-align: center;
-    padding: 40px 32px;
-    animation: fadeIn 0.5s ease forwards;
-  }
-
-  .result-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 3px;
-    margin-bottom: 8px;
-  }
-
-  .result-title.big {
-    font-size: clamp(42px, 10vw, 72px);
-    letter-spacing: 6px;
-    margin-bottom: 16px;
-  }
-
-  .answer-reveal {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(48px, 12vw, 80px);
-    letter-spacing: 8px;
-    color: var(--sand);
-    margin: 16px 0;
-    text-shadow: 0 0 80px rgba(200,169,110,0.5);
-    animation: glowPulse 2s ease-in-out infinite;
-  }
-
-  .correct-points {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(48px, 12vw, 80px);
-    color: #6abf45;
-    text-shadow: 0 0 60px rgba(100,190,70,0.4);
-    margin: 8px 0 16px;
-    animation: glowPulse 2s ease-in-out infinite;
-  }
-
-  @keyframes glowPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.75; }
-  }
-
-  .ticker {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: rgba(13,11,8,0.95);
-    border-top: 1px solid rgba(200,169,110,0.15);
-    overflow: hidden;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    z-index: 100;
-  }
-
-  .ticker-inner {
-    display: flex;
-    animation: scroll 30s linear infinite;
-    white-space: nowrap;
-    gap: 60px;
-  }
-
-  .ticker-item {
-    font-size: 10px;
-    letter-spacing: 3px;
-    color: rgba(200,169,110,0.4);
-    text-transform: uppercase;
-  }
-
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes typeIn {
-    from { opacity: 0; transform: translateX(-8px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-6px); }
-    40% { transform: translateX(6px); }
-    60% { transform: translateX(-4px); }
-    80% { transform: translateX(4px); }
-  }
-  @keyframes scroll {
-    from { transform: translateX(100vw); }
-    to { transform: translateX(-100%); }
-  }
-
-  .shake { animation: shake 0.4s ease; }
-</style>
+            .end-score {
+                font-size: 2.8rem;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <div class="frame">
+            <div class="ornament">✦ ❦ ✦</div>
+            <h1>Pan's Labyrinth Quiz</h1>
+            <p class="subtitle">
+                Three statements. One is a lie.
+            </p>
 
-<div class="container">
+            <div id="quiz-container"></div>
 
-  <div class="header">
-    <div class="stamp">Movie Night — Classified</div>
-    <h1>Guess The Film</h1>
-    <p class="subtitle">One clue at a time. Fewest clues wins.</p>
-    <p class="player-name">— Movie Fan 9000 —</p>
-  </div>
+            <div class="quiz-section" id="end-screen">
+                <div class="end-screen">
+                    <h2>The Trial is Complete</h2>
+                    <div class="end-score" id="final-score">0/0</div>
+                    <p class="end-text">
+                        A respectable showing. You are now fully prepared for an evening of dark fairy tales,
+                        impossible creatures, and unsettling trivia.
+                    </p>
+                    <button class="primary" onclick="restartQuiz()">Play Again</button>
+                </div>
+            </div>
 
-  <div class="scoreboard">
-    <div class="score-block">
-      <div class="score-label">Clue</div>
-      <div class="score-value" id="clueCount">—</div>
+            <div class="footer-note">For movie night use only</div>
+        </div>
     </div>
-    <div class="score-divider"></div>
-    <div class="score-block">
-      <div class="score-label">Points if correct now</div>
-      <div class="score-value" id="currentPoints">5</div>
-    </div>
-    <div class="score-divider"></div>
-    <div class="score-block">
-      <div class="score-label">Clues remaining</div>
-      <div class="score-value" id="cluesLeft">5</div>
-    </div>
-  </div>
 
-  <div class="progress-track" id="progressTrack"></div>
-  <div class="previous-clues" id="previousClues"></div>
+    <script>
+        const quizzes = [
+            {
+                id: 1,
+                statements: [
+                    "Doug Jones played both the Faun and the Pale Man.",
+                    "Pan's Labyrinth won Oscars for Cinematography, Art Direction, and Makeup.",
+                    "The film was shot entirely in English and dubbed into Spanish later."
+                ],
+                lie: 2,
+                lieText: "The lie is the third statement. The film was made in Spanish, not shot in English first. Doug Jones did play both creatures, and the film won three Oscars."
+            },
+            {
+                id: 2,
+                statements: [
+                    "Guillermo del Toro wrote and directed the film.",
+                    "The film was released in 2006.",
+                    "Pan's Labyrinth is a remake of an older Spanish fantasy film."
+                ],
+                lie: 2,
+                lieText: "The lie is the third statement. Pan's Labyrinth is an original film, not a remake."
+            },
+            {
+                id: 3,
+                statements: [
+                    "Ivana Baquero was cast after Guillermo del Toro adjusted the role to suit her age.",
+                    "Sergi López plays Captain Vidal.",
+                    "The role of Ofelia was originally written for an adult woman."
+                ],
+                lie: 2,
+                lieText: "The lie is the third statement. Ofelia was not originally written as an adult woman. Del Toro adapted the character after casting Ivana Baquero."
+            },
+            {
+                id: 4,
+                statements: [
+                    "The original Spanish title is El laberinto del fauno.",
+                    "The film is primarily in Spanish.",
+                    "It was produced as a Hollywood studio musical."
+                ],
+                lie: 2,
+                lieText: "The lie is the third statement. Pan's Labyrinth is a dark fantasy drama, not a Hollywood musical."
+            },
+            {
+                id: 5,
+                statements: [
+                    "Guillermo del Toro has said the film can be read as either literal fantasy or psychological interpretation.",
+                    "The creature effects combine prosthetics, costume work, and CGI.",
+                    "The film was directed by Alfonso Cuarón."
+                ],
+                lie: 2,
+                lieText: "The lie is the third statement. The film was directed by Guillermo del Toro, not Alfonso Cuarón."
+            },
+            {
+                id: 6,
+                statements: [
+                    "The film was nominated for Best Foreign Language Film at the Oscars.",
+                    "It won three Academy Awards.",
+                    "It was Mexico's official submission to the Oscars."
+                ],
+                lie: 0,
+                lieText: "The lie is the first statement. Although it won three Oscars, it was not nominated for Best Foreign Language Film."
+            },
+            {
+                id: 7,
+                statements: [
+                    "The Faun's Spanish name is 'el fauno.'",
+                    "Doug Jones performed in heavy prosthetics and learned lines phonetically.",
+                    "The Faun was created entirely as a digital character with no costume or makeup."
+                ],
+                lie: 2,
+                lieText: "The lie is the third statement. The Faun was performed physically by Doug Jones using extensive prosthetics and costume work, with digital enhancement in places."
+            },
+            {
+                id: 8,
+                statements: [
+                    "The film blends dark fantasy with historical drama.",
+                    "It is associated with the Francoist period in Spain.",
+                    "It was filmed in black and white to resemble silent cinema."
+                ],
+                lie: 2,
+                lieText: "The lie is the third statement. The film is in colour and is known for its rich visual design, not black-and-white silent-era styling."
+            },
+            {
+                id: 9,
+                statements: [
+                    "Guillermo del Toro was approached about directing a Harry Potter film.",
+                    "He keeps a collection of creepy props and memorabilia in a house he nicknamed 'Bleak House.'",
+                    "He later directed Harry Potter and the Half-Blood Prince."
+                ],
+                lie: 2,
+                lieText: "The lie is the third statement. Guillermo del Toro has said he was approached about directing a Harry Potter film, but he never directed one. The 'Bleak House' fact is true — he’s well known for his famously eerie creative collection."
+            }
+        ];
 
-  <div class="clue-area" id="clueArea" style="display:none">
-    <div class="clue-header">
-      <div class="clue-label">Current clue</div>
-      <div class="points-badge" id="pointsBadge"></div>
-    </div>
-    <div class="clue-card">
-      <div class="clue-number" id="clueNumber">Clue 1</div>
-      <div class="clue-text" id="clueText"></div>
-    </div>
-  </div>
+        let currentRound = 0;
+        let score = 0;
+        let selectedAnswer = null;
+        let revealed = false;
 
-  <div class="controls" id="mainControls">
-    <button class="btn-primary" id="startBtn" onclick="startGame()">Start Game</button>
-    <button class="btn-secondary" id="nextBtn" onclick="nextClue()" style="display:none" disabled>Next Clue →</button>
-    <button class="btn-danger" id="resetBtn" onclick="resetGame()" style="display:none">Reset</button>
-  </div>
+        function renderQuiz() {
+            const quiz = quizzes[currentRound];
+            const container = document.getElementById("quiz-container");
+            const roundNum = currentRound + 1;
+            const totalRounds = quizzes.length;
 
-  <div class="answer-area" id="answerArea" style="display:none">
-    <div class="answer-label">Your answer</div>
-    <div class="answer-input-row">
-      <input type="text" id="answerInput" placeholder="Name the film..." onkeydown="if(event.key==='Enter')checkAnswer()">
-      <button class="btn-guess" onclick="checkAnswer()">Guess</button>
-    </div>
-  </div>
+            let html = `
+                <div class="quiz-section active">
+                    <div class="meta-row">
+                        <p class="round-label">Round ${roundNum} of ${totalRounds}</p>
+                        <p class="score">Correct answers so far: ${score}</p>
+                    </div>
+                    <div class="statements">
+            `;
 
-  <div class="result-message" id="resultMessage">
-    <div class="result-title" id="resultTitle"></div>
-    <div id="resultBody"></div>
-  </div>
+            quiz.statements.forEach((statement, index) => {
+                const isSelected = selectedAnswer === index;
+                html += `
+                    <div class="statement ${isSelected ? "selected" : ""}" onclick="selectAnswer(${index})">
+                        <p class="statement-text">${statement}</p>
+                    </div>
+                `;
+            });
 
-</div>
+            html += `</div>`;
 
-<div class="ticker">
-  <div class="ticker-inner">
-    <span class="ticker-item">Movie Night</span>
-    <span class="ticker-item">· · ·</span>
-    <span class="ticker-item">Clue by clue</span>
-    <span class="ticker-item">· · ·</span>
-    <span class="ticker-item">Movie Fan 9000</span>
-    <span class="ticker-item">· · ·</span>
-    <span class="ticker-item">Fewest clues wins</span>
-    <span class="ticker-item">· · ·</span>
-    <span class="ticker-item">Movie Night</span>
-    <span class="ticker-item">· · ·</span>
-    <span class="ticker-item">Clue by clue</span>
-    <span class="ticker-item">· · ·</span>
-    <span class="ticker-item">Movie Fan 9000</span>
-    <span class="ticker-item">· · ·</span>
-    <span class="ticker-item">Fewest clues wins</span>
-    <span class="ticker-item">· · ·</span>
-  </div>
-</div>
+            if (revealed) {
+                const correct = selectedAnswer === quiz.lie;
+                html += `
+                    <div class="reveal">
+                        <div class="reveal-content">
+                            <p class="lie-label">The lie was</p>
+                            <p class="lie-text">“${quiz.statements[quiz.lie]}”</p>
+                            <p class="explanation">${quiz.lieText}</p>
+                            <div class="result-message ${correct ? "result-correct" : "result-incorrect"}">
+                                ${correct ? "✓ Correct" : "✗ Incorrect"}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="controls">
+                        ${
+                            currentRound < quizzes.length - 1
+                                ? `<button class="primary" onclick="nextRound()">Next Round</button>`
+                                : `<button class="primary" onclick="endQuiz()">See Results</button>`
+                        }
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="controls">
+                        <button class="primary" onclick="revealAnswer()" ${selectedAnswer === null ? "disabled" : ""}>
+                            Lock In Answer
+                        </button>
+                    </div>
+                `;
+            }
 
-<script>
-const CLUES = [
-  {
-    text: "The composer built the entire score around the ticking of his own pocket watch, recorded and layered into almost every scene.",
-    points: 5
-  },
-  {
-    text: "Released in 2017.",
-    points: 4
-  },
-  {
-    text: "The director refused CGI for the action sequences. Every vehicle on screen is either real or a practical scale model.",
-    points: 3
-  },
-  {
-    text: "The story is told across three separate timelines, each running on a completely different scale of time — one spanning a week, one a day, one a single hour.",
-    points: 2
-  },
-  {
-    text: "Based on a true event: a desperate military evacuation from a beach in northern France in the summer of 1940.",
-    points: 1
-  },
-];
+            html += `</div>`;
+            container.innerHTML = html;
+        }
 
-const ANSWER_ALIASES = ["dunkirk", "the dunkirk", "dunkirk 2017"];
+        function selectAnswer(index) {
+            if (!revealed) {
+                selectedAnswer = index;
+                renderQuiz();
+            }
+        }
 
-let currentClueIndex = -1;
-let gameStarted = false;
-let gameOver = false;
+        function revealAnswer() {
+            if (selectedAnswer === null) return;
 
-function buildProgressTrack() {
-  const track = document.getElementById('progressTrack');
-  track.innerHTML = '';
-  CLUES.forEach((_, i) => {
-    const pip = document.createElement('div');
-    pip.className = 'progress-pip';
-    pip.id = `pip-${i}`;
-    track.appendChild(pip);
-  });
-}
+            const quiz = quizzes[currentRound];
+            if (selectedAnswer === quiz.lie) {
+                score++;
+            }
 
-function updateProgress() {
-  CLUES.forEach((_, i) => {
-    const pip = document.getElementById(`pip-${i}`);
-    if (!pip) return;
-    if (i < currentClueIndex) pip.className = 'progress-pip seen';
-    else if (i === currentClueIndex) pip.className = 'progress-pip current';
-    else pip.className = 'progress-pip';
-  });
-}
+            revealed = true;
+            renderQuiz();
+        }
 
-function updateScoreboard() {
-  document.getElementById('clueCount').textContent = currentClueIndex + 1;
-  document.getElementById('currentPoints').textContent = CLUES[currentClueIndex].points;
-  document.getElementById('cluesLeft').textContent = CLUES.length - (currentClueIndex + 1);
-  document.getElementById('pointsBadge').innerHTML = `${CLUES[currentClueIndex].points} <span>pts</span>`;
-  document.getElementById('clueNumber').textContent = `Clue ${currentClueIndex + 1}`;
-}
+        function nextRound() {
+            currentRound++;
+            selectedAnswer = null;
+            revealed = false;
+            renderQuiz();
+        }
 
-function showClue(index) {
-  const clueText = document.getElementById('clueText');
-  clueText.className = 'clue-text';
-  void clueText.offsetWidth;
-  clueText.className = 'clue-text revealed';
-  clueText.textContent = CLUES[index].text;
+        function endQuiz() {
+            document.getElementById("quiz-container").innerHTML = "";
+            document.getElementById("final-score").textContent = `${score}/${quizzes.length}`;
+            document.getElementById("end-screen").classList.add("active");
+        }
 
-  updateScoreboard();
-  updateProgress();
+        function restartQuiz() {
+            currentRound = 0;
+            score = 0;
+            selectedAnswer = null;
+            revealed = false;
+            document.getElementById("end-screen").classList.remove("active");
+            renderQuiz();
+        }
 
-  document.getElementById('nextBtn').disabled = (index >= CLUES.length - 1);
-  document.getElementById('answerInput').value = '';
-  document.getElementById('resultMessage').className = 'result-message';
-  document.getElementById('answerInput').focus();
-}
-
-function startGame() {
-  gameStarted = true;
-  gameOver = false;
-  currentClueIndex = 0;
-
-  document.getElementById('startBtn').style.display = 'none';
-  document.getElementById('nextBtn').style.display = 'inline-block';
-  document.getElementById('resetBtn').style.display = 'inline-block';
-  document.getElementById('clueArea').style.display = 'block';
-  document.getElementById('answerArea').style.display = 'block';
-  document.getElementById('resultMessage').className = 'result-message';
-  document.getElementById('previousClues').innerHTML = '';
-
-  buildProgressTrack();
-  showClue(0);
-}
-
-function nextClue() {
-  if (currentClueIndex >= CLUES.length - 1) return;
-
-  const prev = document.getElementById('previousClues');
-  const div = document.createElement('div');
-  div.className = 'prev-clue';
-  div.setAttribute('data-num', currentClueIndex + 1);
-  div.textContent = CLUES[currentClueIndex].text;
-  prev.appendChild(div);
-
-  currentClueIndex++;
-  showClue(currentClueIndex);
-
-  // Auto-reveal after showing the last clue with a short delay
-  if (currentClueIndex >= CLUES.length - 1) {
-    document.getElementById('nextBtn').disabled = true;
-    setTimeout(showReveal, 8000);
-  }
-}
-
-function showReveal() {
-  if (gameOver) return;
-  gameOver = true;
-  const resultMsg = document.getElementById('resultMessage');
-  const resultTitle = document.getElementById('resultTitle');
-  const resultBody = document.getElementById('resultBody');
-  resultTitle.className = 'result-title';
-  resultTitle.textContent = 'Time\'s up!';
-  resultMsg.className = 'result-message game-over';
-  resultBody.innerHTML = `<div style="color:var(--smoke);font-size:14px;margin-bottom:4px">Tonight's film was:</div>
-    <div class="answer-reveal">DUNKIRK</div>
-    <div style="color:var(--smoke);font-size:13px">Christopher Nolan · 2017</div>`;
-  document.getElementById('answerArea').style.display = 'none';
-  document.getElementById('nextBtn').disabled = true;
-}
-
-function checkAnswer() {
-  if (gameOver) return;
-  const input = document.getElementById('answerInput');
-  const raw = input.value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
-  if (!raw) return;
-
-  const correct = ANSWER_ALIASES.some(a => raw.includes(a));
-  const resultMsg = document.getElementById('resultMessage');
-  const resultTitle = document.getElementById('resultTitle');
-  const resultBody = document.getElementById('resultBody');
-
-  if (correct) {
-    const pts = CLUES[currentClueIndex].points;
-    const clueNum = currentClueIndex + 1;
-    gameOver = true;
-    document.getElementById('nextBtn').disabled = true;
-    document.getElementById('answerArea').style.display = 'none';
-    resultTitle.className = 'result-title big';
-    resultTitle.textContent = 'Well Done!';
-    resultMsg.className = 'result-message correct';
-    resultBody.innerHTML = `<div class="correct-points">+${pts} point${pts !== 1 ? 's' : ''}</div>
-      <div style="color:#8acc60;font-size:15px;font-family:'Special Elite',cursive">Got it on clue ${clueNum} of ${CLUES.length}. Not bad, Movie Fan 9000.</div>`;
-  } else {
-    input.classList.add('shake');
-    setTimeout(() => input.classList.remove('shake'), 400);
-    resultTitle.className = 'result-title';
-    resultTitle.textContent = 'Not quite.';
-    resultMsg.className = 'result-message wrong';
-    resultBody.textContent = `"${input.value.trim()}" — keep trying, or reveal the next clue.`;
-    input.value = '';
-
-    if (currentClueIndex >= CLUES.length - 1) {
-      setTimeout(showReveal, 1500);
-    }
-  }
-}
-
-function resetGame() {
-  gameStarted = false;
-  gameOver = false;
-  currentClueIndex = -1;
-
-  document.getElementById('startBtn').style.display = 'inline-block';
-  document.getElementById('nextBtn').style.display = 'none';
-  document.getElementById('resetBtn').style.display = 'none';
-  document.getElementById('clueArea').style.display = 'none';
-  document.getElementById('answerArea').style.display = 'none';
-  document.getElementById('resultMessage').className = 'result-message';
-  document.getElementById('previousClues').innerHTML = '';
-  document.getElementById('clueCount').textContent = '—';
-  document.getElementById('currentPoints').textContent = '5';
-  document.getElementById('cluesLeft').textContent = CLUES.length;
-
-  buildProgressTrack();
-}
-
-buildProgressTrack();
-</script>
+        renderQuiz();
+    </script>
 </body>
 </html>
