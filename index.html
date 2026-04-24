@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rear Window Quiz</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 700px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .ornament {
+      font-size: 1.5rem;
+      color: #8b7355;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.5rem;
+    }
+
+    h1 {
+      font-size: 3rem;
+      color: #e8d5c4;
+      margin-bottom: 1rem;
+      font-weight: 300;
+      letter-spacing: 2px;
+    }
+
+    .subtitle {
+      color: #9a8a78;
+      font-size: 0.95rem;
+      margin-bottom: 3rem;
+      font-style: italic;
+    }
+
+    #intro-screen {
+      display: block;
+    }
+
+    #quiz-screen {
+      display: none;
+    }
+
+    #results-screen {
+      display: none;
+    }
+
+    .intro-text {
+      color: #c9b5a3;
+      line-height: 1.8;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+
+    .start-button {
+      padding: 0.75rem 2rem;
+      background: #8b7355;
+      color: #f5f1ed;
+      border: 1px solid #8b7355;
+      border-radius: 2px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 1px;
+    }
+
+    .start-button:hover {
+      background: #6b5344;
+      border-color: #6b5344;
+    }
+
+    .question-counter {
+      color: #9a8a78;
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+    }
+
+    .statements-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .statement {
+      background: rgba(139, 115, 85, 0.1);
+      border: 2px solid #8b7355;
+      padding: 1.25rem;
+      border-radius: 4px;
+      color: #c9b5a3;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .statement:hover:not(.revealed) {
+      background: rgba(139, 115, 85, 0.2);
+      border-color: #a89373;
+    }
+
+    .statement.selected {
+      background: rgba(139, 115, 85, 0.3);
+      border-color: #c9b5a3;
+    }
+
+    .statement.correct {
+      background: rgba(107, 174, 117, 0.2);
+      border-color: #6bae75;
+      color: #a8d5a8;
+    }
+
+    .statement.incorrect {
+      background: rgba(193, 109, 108, 0.2);
+      border-color: #c16d6c;
+      color: #d9a5a5;
+    }
+
+    .statement.revealed {
+      cursor: default;
+    }
+
+    .answer-text {
+      color: #9a8a78;
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+
+    .next-button {
+      padding: 0.75rem 2rem;
+      background: #8b7355;
+      color: #f5f1ed;
+      border: 1px solid #8b7355;
+      border-radius: 2px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 1px;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .next-button:hover:not(:disabled) {
+      background: #6b5344;
+      border-color: #6b5344;
+      opacity: 1;
+    }
+
+    .next-button.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .results-heading {
+      font-size: 2rem;
+      color: #e8d5c4;
+      margin-bottom: 1rem;
+      font-weight: 300;
+    }
+
+    .score-display {
+      font-size: 2.5rem;
+      color: #8b7355;
+      margin: 1.5rem 0;
+    }
+
+    .result-message {
+      color: #c9b5a3;
+      font-size: 0.95rem;
+      line-height: 1.8;
+      margin-bottom: 2rem;
+    }
+
+    .footer {
+      color: #6b5344;
+      font-size: 0.75rem;
+      margin-top: 3rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .replay-button {
+      padding: 0.75rem 2rem;
+      background: #8b7355;
+      color: #f5f1ed;
+      border: 1px solid #8b7355;
+      border-radius: 2px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 1px;
+    }
+
+    .replay-button:hover {
+      background: #6b5344;
+      border-color: #6b5344;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="ornament">✦ ❦ ✦</div>
+    <h1>Rear Window</h1>
+    <p class="subtitle">Three statements. One is a lie.</p>
+
+    <div id="intro-screen">
+      <p class="intro-text">
+        Before Hitchcock's masterpiece unfolds on screen, test your knowledge of the film itself. 
+        Read each set of three statements carefully—two are true, but one is a deception. 
+        Can you spot the lie?
+      </p>
+      <button class="start-button" onclick="startQuiz()">Begin The Trial</button>
+      <p class="footer">For movie night use only</p>
+    </div>
+
+    <div id="quiz-screen">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div class="question-counter">
+          <span id="current-question">1</span> of <span id="total-questions">6</span>
+        </div>
+        <div style="color: #8b7355; font-size: 1.1rem; font-weight: 500;">
+          Score: <span id="running-score" style="color: #e8d5c4;">0</span>/<span id="total-score">6</span>
+        </div>
+      </div>
+
+      <div class="statements-container" id="statements-container">
+        <!-- Statements will be inserted here -->
+      </div>
+
+      <button id="next-btn" class="next-button" onclick="nextQuestion()">
+        Next Trial
+      </button>
+    </div>
+
+    <div id="results-screen">
+      <div class="results-heading">The Trial is Complete</div>
+      <div class="score-display" id="final-score">0/6</div>
+      <p class="result-message" id="result-message"></p>
+      <button class="replay-button" onclick="location.reload()">Play Again</button>
+      <p class="footer">For movie night use only</p>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        statements: [
+          { text: "Rear Window was Alfred Hitchcock's first film in color, shot in VistaVision.", truth: true },
+          { text: "The entire apartment courtyard set was built on a soundstage at Paramount Studios and took 6 months to construct.", truth: true },
+          { text: "Grace Kelly wore a light pink gown in the most memorable scene, which she kept as a personal memento from the film.", truth: false }
+        ],
+        lie: 2,
+        explanation: "Grace Kelly wore a white evening gown, not pink. While Hitchcock's use of color was striking, the iconic dress was distinctly white."
+      },
+      {
+        statements: [
+          { text: "James Stewart's character was confined to a wheelchair for the entire film, while Hitchcock kept the camera mostly locked in one position to mirror his confinement.", truth: true },
+          { text: "Hitchcock appears in the film sitting at a piano in one of the neighbor's apartments, winding a clock.", truth: true },
+          { text: "The film was shot entirely on location in Greenwich Village, New York, with hidden cameras in real apartment buildings.", truth: false }
+        ],
+        lie: 2,
+        explanation: "The entire film was shot on a constructed soundstage set at Paramount. No location filming was done—everything was carefully controlled in the studio."
+      },
+      {
+        statements: [
+          { text: "Rear Window was released in 1954 and earned over $9 million at the box office, making it one of the year's most successful films.", truth: true },
+          { text: "Grace Kelly received an Academy Award nomination for Best Supporting Actress for her role as Lisa Carol Fremont.", truth: false },
+          { text: "The film marked the first of three collaborations between Hitchcock and Grace Kelly, who appeared in Dial M for Murder and To Catch a Thief.", truth: true }
+        ],
+        lie: 1,
+        explanation: "While the film was critically acclaimed, Grace Kelly received no Oscar nomination for this role. She did win Best Actress the following year for The Country Girl."
+      },
+      {
+        statements: [
+          { text: "The production budget for Rear Window was approximately $2 million, a significant investment for the time.", truth: true },
+          { text: "Composer John Williams wrote the film's original score, establishing one of his earliest major Hollywood works.", truth: false },
+          { text: "Franz Waxman composed the distinctive musical score that accompanies the voyeuristic tension throughout the film.", truth: true }
+        ],
+        lie: 1,
+        explanation: "The score was composed by Franz Waxman, not John Williams. Waxman's work perfectly captured the film's psychological tension."
+      },
+      {
+        statements: [
+          { text: "The courtyard set was approximately 90 feet tall and contained 31 apartment windows, each with miniature sets behind them.", truth: true },
+          { text: "Real pigeons and live animals were placed in the apartment windows to add authenticity, which caused the shoot to take twice as long.", truth: false },
+          { text: "Every apartment visible through the window had fully detailed interiors on the soundstage, allowing Hitchcock flexibility in framing.", truth: true }
+        ],
+        lie: 1,
+        explanation: "While the set was incredibly detailed, they didn't use live animals in the windows. The scale of the production was ambitious enough without that complication."
+      },
+      {
+        statements: [
+          { text: "The film was based on a short story called 'It Had to Be Murder' by thriller writer Cornell Woolrich.", truth: true },
+          { text: "Hitchcock originally wanted Cary Grant for the lead role, but James Stewart was eventually cast because he was more affordable.", truth: false },
+          { text: "The psychological concept of voyeurism explored in the film would influence thriller filmmaking for decades to come.", truth: true }
+        ],
+        lie: 1,
+        explanation: "Hitchcock specifically wanted James Stewart for the role because of his everyman quality and ability to convey the character's internal conflict. Cost was not the deciding factor."
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+
+    function startQuiz() {
+      document.getElementById('intro-screen').style.display = 'none';
+      document.getElementById('quiz-screen').style.display = 'block';
+      document.getElementById('total-questions').textContent = questions.length;
+      document.getElementById('total-score').textContent = questions.length;
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = questions[currentQuestion];
+      document.getElementById('current-question').textContent = currentQuestion + 1;
+
+      const container = document.getElementById('statements-container');
+      container.innerHTML = '';
+
+      q.statements.forEach((statement, index) => {
+        const div = document.createElement('div');
+        div.className = 'statement';
+        div.textContent = statement.text;
+        div.onclick = () => selectStatement(index);
+        div.id = `statement-${index}`;
+        container.appendChild(div);
+      });
+
+      answered = false;
+      updateNextButton();
+    }
+
+    function selectStatement(index) {
+      if (answered) return;
+      answered = true;
+
+      const q = questions[currentQuestion];
+      const buttons = document.querySelectorAll('.statement');
+
+      buttons.forEach((btn, i) => {
+        btn.classList.add('revealed');
+        if (i === q.lie) {
+          btn.classList.add('incorrect');
+          const answer = document.createElement('div');
+          answer.className = 'answer-text';
+          answer.textContent = 'THE LIE';
+          btn.appendChild(answer);
+        } else {
+          btn.classList.add('correct');
+        }
+      });
+
+      if (index === q.lie) {
+        score++;
+        document.getElementById('running-score').textContent = score;
+      }
+
+      updateNextButton();
+    }
+
+    function updateNextButton() {
+      const btn = document.getElementById('next-btn');
+      if (answered) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+      btn.textContent = currentQuestion === questions.length - 1 ? 'See Results' : 'Next Trial';
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion >= questions.length) {
+        showResults();
+      } else {
+        showQuestion();
+      }
+    }
+
+    function showResults() {
+      document.getElementById('quiz-screen').style.display = 'none';
+      document.getElementById('results-screen').style.display = 'block';
+
+      document.getElementById('final-score').textContent = `${score}/${questions.length}`;
+
+      let message = '';
+      if (score === questions.length) {
+        message = 'Flawless. You see everything, miss nothing. You are perfectly prepared for Hitchcock\'s masterpiece.';
+      } else if (score >= 5) {
+        message = 'A keen eye. You understand the craft and cunning behind the camera. Settle in for an unforgettable evening.';
+      } else if (score >= 3) {
+        message = 'Respectable. You know enough of the film\'s secrets to appreciate what unfolds. The deceptions are well-hidden.';
+      } else {
+        message = 'The lies have deceived you, but no matter. This quiz is merely a prelude to the real mystery on screen.';
+      }
+
+      document.getElementById('result-message').textContent = message;
+    }
+  </script>
+</body>
+</html>
